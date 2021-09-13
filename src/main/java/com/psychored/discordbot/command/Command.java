@@ -5,19 +5,27 @@ import reactor.core.publisher.Flux;
 
 public abstract class Command {
 
-    protected String description;
+    protected String shortDescription;
+
+    protected String longDescription;
 
     public Flux<Object> execute(Message command, String argument) {
         return null;
     }
 
-    public String getDescription() {
-        return description;
+    public String getShortDescription() {
+        return shortDescription;
     }
 
-    protected void setDescription(String description) {
-        this.description = description;
+    protected void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
     }
 
+    public String getLongDescription() {
+        return longDescription;
+    }
 
+    protected void setLongDescription(String longDescription) {
+        this.longDescription = longDescription;
+    }
 }

@@ -10,7 +10,8 @@ import java.time.Instant;
 
 public class DeleteMessagesCommand extends Command {
     {
-        setDescription("Helping is my mission !");
+        setShortDescription("Helping is my mission !");
+        setLongDescription("");
     }
 
     @Override

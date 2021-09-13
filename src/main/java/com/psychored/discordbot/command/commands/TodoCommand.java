@@ -6,7 +6,8 @@ import reactor.core.publisher.Flux;
 
 public class TodoCommand extends Command {
     {
-        setDescription("Honestly i'm just trying to survive");
+        setShortDescription("Honestly i'm just trying to survive");
+        setLongDescription("");
     }
 
     @Override

@@ -6,7 +6,8 @@ import reactor.core.publisher.Flux;
 
 public class NotFoundCommand extends Command {
     {
-        setDescription("");
+        setShortDescription("");
+        setLongDescription("");
     }
 
     @Override

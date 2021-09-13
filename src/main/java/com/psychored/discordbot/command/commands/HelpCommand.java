@@ -7,7 +7,8 @@ import reactor.core.publisher.Flux;
 
 public class HelpCommand extends Command {
     {
-        setDescription("Helping is my mission !");
+        setShortDescription("Helping is my mission !");
+        setLongDescription("");
     }
 
     @Override
@@ -15,7 +16,7 @@ public class HelpCommand extends Command {
         CommandExecutor commandExecutor = CommandExecutor.getInstance();
         StringBuilder text = new StringBuilder();
         commandExecutor.getCommandNames().forEach((name, command) -> {
-            text.append(commandExecutor.getPREFIX() + name + " - " + command.getDescription());
+            text.append(commandExecutor.getPREFIX() + name + " - " + command.getShortDescription());
             text.append("\n");
         });
         return Flux.just(event)
