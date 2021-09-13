@@ -4,18 +4,17 @@ import com.psychored.discordbot.command.CommandExecutor;
 import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public abstract class MessageListener {
     Logger log = LoggerFactory.getLogger(MessageListener.class);
-    final private String PREFIX = "!todo ";
 
     CommandExecutor commandExecutor = CommandExecutor.getInstance();
 
-    public Mono<Void> processCommand(Message eventMessage) {
+    public Flux<Object> processCommand(Message eventMessage) {
         String username = eventMessage.getUserData().username();
         String messageContent = eventMessage.getContent();
         String channelName = eventMessage.getGuild().block().getChannelById(eventMessage.getChannelId()).block().getName();

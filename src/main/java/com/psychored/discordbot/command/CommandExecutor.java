@@ -1,5 +1,6 @@
 package com.psychored.discordbot.command;
 
+import com.psychored.discordbot.command.commands.DeleteMessagesCommand;
 import com.psychored.discordbot.command.commands.HelpCommand;
 import com.psychored.discordbot.command.commands.NotFoundCommand;
 import com.psychored.discordbot.command.commands.TodoCommand;
@@ -7,11 +8,13 @@ import com.psychored.discordbot.tool.Pair;
 import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class CommandExecutor {
     Logger log = LoggerFactory.getLogger(CommandExecutor.class);
@@ -76,11 +79,12 @@ public class CommandExecutor {
 
         addCommand("hello", TodoCommand.class);
         addCommand("help", HelpCommand.class);
+        addCommand("deleteLast", DeleteMessagesCommand.class);
 
         commandsNameDesc.add(levelCommandsCursor);
     }
 
-    private Mono<Void> handleInternal(Message message){
+    private Flux<Object> handleInternal(Message message) {
         final String splitRegex = "[ ]";
         String[] splitedMessage = message.getContent().substring(1).split(splitRegex, 2);
         if (splitedMessage.length < 2) {
@@ -88,19 +92,20 @@ public class CommandExecutor {
         }
 
         final String commandName = splitedMessage[0].toLowerCase();
+        final String argument = splitedMessage[1].toLowerCase();
         Command command = registeredCommands.get(commandName);
-        if (command == null){
-            if(message.getContent().startsWith(PREFIX))
+        if (command == null) {
+            if (message.getContent().startsWith(PREFIX))
                 command = new NotFoundCommand();
             else
-                return Mono.just(message).then();
+                return Flux.just(message);
         }
 
         writeLog(message, commandName);
-        return command.execute(message);
+        return command.execute(message, argument);
     }
 
-    public Mono<Void> handle(Message message){
+    public Flux<Object> handle(Message message) {
         return handleInternal(message);
     }
 

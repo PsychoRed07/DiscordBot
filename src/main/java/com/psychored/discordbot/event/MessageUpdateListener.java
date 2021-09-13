@@ -2,7 +2,7 @@ package com.psychored.discordbot.event;
 
 import discord4j.core.event.domain.message.MessageUpdateEvent;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 @Service
 public class MessageUpdateListener extends MessageListener implements EventListener<MessageUpdateEvent> {
@@ -13,8 +13,8 @@ public class MessageUpdateListener extends MessageListener implements EventListe
     }
 
     @Override
-    public Mono<Void> execute(MessageUpdateEvent event) {
-        return Mono.just(event)
+    public Flux<Object> execute(MessageUpdateEvent event) {
+        return Flux.just(event)
                 .filter(MessageUpdateEvent::isContentChanged)
                 .flatMap(MessageUpdateEvent::getMessage)
                 .flatMap(super::processCommand);
