@@ -5,16 +5,17 @@ import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public abstract class MessageListener {
-    Logger log = LoggerFactory.getLogger(MessageListener.class);
+    final Logger log = LoggerFactory.getLogger(MessageListener.class);
 
-    CommandExecutor commandExecutor = CommandExecutor.getInstance();
+    final CommandExecutor commandExecutor = CommandExecutor.getInstance();
 
-    public Flux<Object> processCommand(Message eventMessage) {
+    public Mono<Void> processCommand(Message eventMessage) {
         String username = eventMessage.getUserData().username();
         String messageContent = eventMessage.getContent();
         String channelName = eventMessage.getGuild().block().getChannelById(eventMessage.getChannelId()).block().getName();

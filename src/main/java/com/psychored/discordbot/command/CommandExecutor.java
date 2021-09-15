@@ -1,15 +1,14 @@
 package com.psychored.discordbot.command;
 
-import com.psychored.discordbot.command.commands.DeleteMessagesCommand;
-import com.psychored.discordbot.command.commands.HelpCommand;
-import com.psychored.discordbot.command.commands.NotFoundCommand;
-import com.psychored.discordbot.command.commands.TodoCommand;
+import com.psychored.discordbot.command.commands.*;
 import com.psychored.discordbot.tool.Pair;
 import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -17,8 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CommandExecutor {
-    Logger log = LoggerFactory.getLogger(CommandExecutor.class);
-    public static CommandExecutor instance = new CommandExecutor();
+    public static final CommandExecutor instance = new CommandExecutor();
+    final Logger log = LoggerFactory.getLogger(CommandExecutor.class);
 
     public static CommandExecutor getInstance() {
         return instance;
@@ -28,10 +27,6 @@ public class CommandExecutor {
     private final HashMap<String, Command> registeredCommands = new HashMap<>();
     private Pair<List<String>, List<String>> levelCommandsCursor;
     private final List<Pair<List<String>, List<String>>> commandsNameDesc = new ArrayList<>();
-    
-    public boolean isCommand(String content){
-        return content.startsWith(PREFIX);
-    }
 
     public HashMap<String, Command> getCommandNames(){
         return registeredCommands;
@@ -47,7 +42,7 @@ public class CommandExecutor {
 
     private void addCommandInfo(String name, Class<? extends Command> commandClass) {
         try {
-            levelCommandsCursor.getRight().add(commandClass.newInstance().getShortDescription());
+            levelCommandsCursor.getRight().add(commandClass.getDeclaredConstructor().newInstance().getShortDescription());
             levelCommandsCursor.getLeft().add(name);
         } catch(Exception e) {
             e.printStackTrace();
@@ -64,27 +59,27 @@ public class CommandExecutor {
         addCommandInfo(commandName, commandClass);
 
         try {
-            Command commandInstance = commandClass.newInstance();     // thanks Halcyon for noticing commands getting reinstanced every call
+            Command commandInstance = commandClass.getDeclaredConstructor().newInstance();     // thanks Halcyon for noticing commands getting reinstanced every call
 
             registeredCommands.put(commandName, commandInstance);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
     }
 
     private void registerCommands(){
-        levelCommandsCursor = new Pair<>(new ArrayList<String>(), new ArrayList<String>());
+        levelCommandsCursor = new Pair<>(new ArrayList<>(), new ArrayList<>());
 
         addCommand("hello", TodoCommand.class);
         addCommand("help", HelpCommand.class);
         addCommand("deleteLast", DeleteMessagesCommand.class);
+        addCommand("join", JoinCommand.class);
+        addCommand("play", PlayAudioCommand.class);
 
         commandsNameDesc.add(levelCommandsCursor);
     }
 
-    private Flux<Object> handleInternal(Message message) {
+    private Mono<Void> handleInternal(Message message) {
         final String splitRegex = "[ ]";
         String[] splitedMessage = message.getContent().substring(1).split(splitRegex, 2);
         if (splitedMessage.length < 2) {
@@ -98,14 +93,14 @@ public class CommandExecutor {
             if (message.getContent().startsWith(PREFIX))
                 command = new NotFoundCommand();
             else
-                return Flux.just(message);
+                return Mono.just(message).then();
         }
 
         writeLog(message, commandName);
         return command.execute(message, argument);
     }
 
-    public Flux<Object> handle(Message message) {
+    public Mono<Void> handle(Message message) {
         return handleInternal(message);
     }
 

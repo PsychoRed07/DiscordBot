@@ -2,6 +2,7 @@ package com.psychored.discordbot.command;
 
 import discord4j.core.object.entity.Message;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public abstract class Command {
 
@@ -9,7 +10,7 @@ public abstract class Command {
 
     protected String longDescription;
 
-    public Flux<Object> execute(Message command, String argument) {
+    public Mono<Void> execute(Message command, String argument) {
         return null;
     }
 
@@ -17,15 +18,11 @@ public abstract class Command {
         return shortDescription;
     }
 
-    protected void setShortDescription(String shortDescription) {
+    public void setShortDescription(String shortDescription) {
         this.shortDescription = shortDescription;
     }
 
-    public String getLongDescription() {
-        return longDescription;
-    }
-
-    protected void setLongDescription(String longDescription) {
+    public void setLongDescription(String longDescription) {
         this.longDescription = longDescription;
     }
 }

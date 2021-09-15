@@ -4,6 +4,7 @@ import com.psychored.discordbot.command.Command;
 import com.psychored.discordbot.command.CommandExecutor;
 import discord4j.core.object.entity.Message;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class HelpCommand extends Command {
     {
@@ -12,16 +13,17 @@ public class HelpCommand extends Command {
     }
 
     @Override
-    public Flux<Object> execute(Message event, String argument) {
+    public Mono<Void> execute(Message event, String argument) {
         CommandExecutor commandExecutor = CommandExecutor.getInstance();
         StringBuilder text = new StringBuilder();
         commandExecutor.getCommandNames().forEach((name, command) -> {
-            text.append(commandExecutor.getPREFIX() + name + " - " + command.getShortDescription());
+            text.append(commandExecutor.getPREFIX()).append(name).append(" - ").append(command.getShortDescription());
             text.append("\n");
         });
-        return Flux.just(event)
+        return Mono.just(event)
                 .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
                 .flatMap(Message::getChannel)
-                .flatMap(channel -> channel.createMessage(text.toString()));
+                .flatMap(channel -> channel.createMessage(text.toString()))
+                .then();
     }
 }
