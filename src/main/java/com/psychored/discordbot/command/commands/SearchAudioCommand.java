@@ -31,6 +31,14 @@ public class SearchAudioCommand extends Command {
                 .flatMap(VoiceState::getChannel)
                 .block();
 
+        if (vc == null){
+            return returnMessage(event, "Please connect to a channel to listen to some tunes daddy");
+        }
+
+        if (argument.equals("")){
+            return returnMessage(event, "Please specify what you would like to search for using !search <title>");
+        }
+
         List<YoutubeItem> list = YoutubeApiService.youtubeSearch(argument);
 
         StringBuilder builder = new StringBuilder();
@@ -59,6 +67,14 @@ public class SearchAudioCommand extends Command {
         embedCreateSpec.footer("feel free to donate using the !donate command \uD83D\uDE0D", BotConfiguration.getClient().getSelf().block().getAvatarUrl());
 
         return embedCreateSpec.build();
+    }
+
+    private Mono<Void> returnMessage(Message event, String text){
+        return Mono.just(event)
+                .filter(message -> event.getAuthor().map(user -> !user.isBot()).orElse(false))
+                .flatMap(Message::getChannel)
+                .flatMap(channel -> channel.createMessage(text))
+                .then();
     }
 
 }
