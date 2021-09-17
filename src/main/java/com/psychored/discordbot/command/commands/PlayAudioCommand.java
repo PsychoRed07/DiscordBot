@@ -63,19 +63,15 @@ public class PlayAudioCommand extends Command {
 
         List<YoutubeItem> list = YoutubeSearchManager.getSearchResult(channel.getId().toString());
 
-        if (list == null){
+        if (list.isEmpty()) {
             return returnMessage(event, "Please use the !search command before playing a song.");
         }
 
         //TODO:
         // 1. Need to add a queue
-        // 2. handle the 'Loading information for a YouTube track failed.' exception (Replicate by using -> !search daddy -> !play 1)
 
-        try {
-            PLAYER_MANAGER.loadItemOrdered(manager ,list.get(0).getUrl(), scheduler);
-        }catch (Exception e){
-            return returnMessage(event, "Oppsies, something went wrong :( Try again !");
-        }
+        PLAYER_MANAGER.loadItem(list.get(0).getUrl(), scheduler);
+
 
         final Mono<Void> onDisconnect = channel.join(spec -> spec.setProvider(provider))
                 .flatMap(connection -> {
@@ -99,7 +95,6 @@ public class PlayAudioCommand extends Command {
                             .next()
                             .then();
 
-                    PLAYER_MANAGER.shutdown();
                     // Disconnect the bot if either onDelay or onEvent are completed!
                     return Mono.firstWithSignal(onDelay, onEvent).then(connection.disconnect());
                 });
