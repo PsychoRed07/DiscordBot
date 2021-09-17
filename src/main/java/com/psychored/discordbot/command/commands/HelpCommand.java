@@ -3,7 +3,6 @@ package com.psychored.discordbot.command.commands;
 import com.psychored.discordbot.command.Command;
 import com.psychored.discordbot.command.CommandExecutor;
 import discord4j.core.object.entity.Message;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class HelpCommand extends Command {
@@ -17,7 +16,7 @@ public class HelpCommand extends Command {
         CommandExecutor commandExecutor = CommandExecutor.getInstance();
         StringBuilder text = new StringBuilder();
         commandExecutor.getCommandNames().forEach((name, command) -> {
-            text.append(commandExecutor.getPREFIX()).append(name).append(" - ").append(command.getShortDescription());
+            text.append(commandExecutor.getPREFIX() + name + " - " + command.getShortDescription());
             text.append("\n");
         });
         return Mono.just(event)

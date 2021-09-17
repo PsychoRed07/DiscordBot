@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public final class AudioTrackScheduler extends AudioEventAdapter implements AudioLoadResultHandler{
+public final class AudioTrackScheduler extends AudioEventAdapter implements AudioLoadResultHandler {
 
     private final List<AudioTrack> queue;
     private final AudioPlayer player;

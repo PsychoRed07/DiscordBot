@@ -1,22 +1,22 @@
 package com.psychored.discordbot.command.commands;
 
-import com.psychored.discordbot.audioplayer.AudioTrackScheduler;
 import com.psychored.discordbot.audioplayer.GuildAudioManager;
+import com.psychored.discordbot.audioplayer.service.YoutubeApiService;
+import com.psychored.discordbot.audioplayer.service.YoutubeItem;
+import com.psychored.discordbot.audioplayer.service.YoutubeSearchManager;
 import com.psychored.discordbot.command.Command;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import discord4j.core.event.domain.VoiceStateUpdateEvent;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.voice.AudioProvider;
-import discord4j.voice.VoiceConnection;
 import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.function.Consumer;
+import java.util.List;
 
 import static com.psychored.discordbot.audioplayer.AudioGlobalManager.PLAYER_MANAGER;
 
@@ -28,17 +28,44 @@ public class PlayAudioCommand extends Command {
 
     @Override
     public Mono<Void> execute(Message event, String argument) {
+        int arg = -1;
+        if (!argument.equals("")){
+            try {
+                arg = Integer.parseInt(argument);
+                if (arg > 5){
+                    return returnMessage(event,"Please choose between option 1 to 5 using !play *<number>*");
+                }
+            }catch (Exception e){
+                return returnMessage(event, "The argument is not valid.");
+            }
+        }
+
+        User userCheck = Mono.just(event)
+                .flatMap(Message::getAuthorAsMember)
+                .block();
 
         VoiceChannel channel = Mono.just(event)
+                .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
                 .flatMap(Message::getAuthorAsMember)
                 .flatMap(Member::asFullMember)
                 .flatMap(Member::getVoiceState)
                 .flatMap(VoiceState::getChannel)
                 .block();
 
+        if (userCheck.isBot() || channel == null) {
+            return Mono.just(event).then();
+        }
+
         final GuildAudioManager manager = GuildAudioManager.of(channel.getGuildId());
         final AudioProvider provider = manager.getProvider();
-        PLAYER_MANAGER.loadItem("https://www.youtube.com/watch?v=dQw4w9WgXcQ", manager.getScheduler());
+
+        List<YoutubeItem> list = YoutubeSearchManager.getSearchResult(channel.getId().toString());
+
+        if (list == null){
+            return returnMessage(event, "Please use the !search command before playing a song.");
+        }
+
+        PLAYER_MANAGER.loadItem(list.get(0).getUrl(), manager.getScheduler());
 
 
         final Mono<Void> onDisconnect = channel.join(spec -> spec.setProvider(provider))
@@ -68,5 +95,13 @@ public class PlayAudioCommand extends Command {
                 });
 
         return onDisconnect;
+    }
+
+    private Mono<Void> returnMessage(Message event, String text){
+        return Mono.just(event)
+                .filter(message -> event.getAuthor().map(user -> !user.isBot()).orElse(false))
+                .flatMap(Message::getChannel)
+                .flatMap(channel -> channel.createMessage(text))
+                .then();
     }
 }

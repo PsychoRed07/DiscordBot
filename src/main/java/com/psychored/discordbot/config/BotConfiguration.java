@@ -22,14 +22,17 @@ import java.util.List;
 @Configuration
 public class BotConfiguration {
 
+    private static GatewayDiscordClient client = null;
     private final Logger log = LoggerFactory.getLogger(EventListener.class);
-
     @Value("${jda.discord.token}")
     private String token;
 
+    public static GatewayDiscordClient getClient() {
+        return client;
+    }
+
     @Bean
     public <T extends Event> GatewayDiscordClient gatewayDiscordClient(List<EventListener<T>> eventListeners) {
-        GatewayDiscordClient client = null;
 
         try {
             client = DiscordClientBuilder.create(token)
@@ -37,22 +40,21 @@ public class BotConfiguration {
                     .login()
                     .block();
 
-            for(EventListener<T> listener : eventListeners) {
+            for (EventListener<T> listener : eventListeners) {
                 client.on(listener.getEventType())
                         .flatMap(listener::execute)
                         .onErrorResume(listener::handleError)
                         .subscribe();
             }
-        }
-        catch ( Exception exception ) {
-            log.error( "Be sure to use a valid bot token!", exception );
+        } catch (Exception exception) {
+            log.error("Be sure to use a valid bot token!", exception);
         }
 
         return client;
     }
 
     @Bean
-    public AudioPlayer audioPlayer(){
+    public AudioPlayer audioPlayer() {
         // Creates AudioPlayer instances and translates URLs to AudioTrack instances
         final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
         // This is an optimization strategy that Discord4J can utilize. It is not important to understand
@@ -65,7 +67,7 @@ public class BotConfiguration {
     }
 
     @Bean
-    public AudioProvider audioProvider(){
+    public AudioProvider audioProvider() {
         AudioPlayer player = audioPlayer();
         // We will be creating LavaPlayerAudioProvider in the next step
         AudioProvider provider = new LavaPlayerAudioProvider(player);
