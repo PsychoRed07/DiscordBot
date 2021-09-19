@@ -2,6 +2,7 @@ package com.psychored.discordbot.command.commands;
 
 import com.psychored.discordbot.command.Command;
 import com.psychored.discordbot.command.CommandExecutor;
+import com.psychored.discordbot.command.CommandHelper;
 import discord4j.core.object.entity.Message;
 import reactor.core.publisher.Mono;
 
@@ -19,10 +20,6 @@ public class HelpCommand extends Command {
             text.append(commandExecutor.getPREFIX() + name + " - " + command.getShortDescription());
             text.append("\n");
         });
-        return Mono.just(event)
-                .filter(message -> message.getAuthor().map(user -> !user.isBot()).orElse(false))
-                .flatMap(Message::getChannel)
-                .flatMap(channel -> channel.createMessage(text.toString()))
-                .then();
+        return CommandHelper.say(event, text.toString());
     }
 }

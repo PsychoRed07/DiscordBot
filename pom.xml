@@ -68,13 +68,6 @@
             <version>v3-rev222-1.25.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/net.dv8tion/JDA -->
-        <dependency>
-            <groupId>net.dv8tion</groupId>
-            <artifactId>JDA</artifactId>
-            <version>4.2.0_247</version>
-        </dependency>
-
     </dependencies>
 
     <build>

@@ -41,7 +41,7 @@ public class YoutubeApiService {
     }
 
     public static List<YoutubeItem> youtubeSearch(String searchQuery) {
-        log.info("Starting Youtube search .." + searchQuery);
+        log.info("Starting Youtube search for '" + searchQuery+ "'");
 
         List<YoutubeItem> youtubeItems = new ArrayList<>();
 

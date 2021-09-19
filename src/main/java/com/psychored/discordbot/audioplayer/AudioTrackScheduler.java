@@ -7,6 +7,8 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -14,8 +16,10 @@ import java.util.List;
 
 public final class AudioTrackScheduler extends AudioEventAdapter implements AudioLoadResultHandler {
 
+    private final Logger log = LoggerFactory.getLogger(AudioTrackScheduler.class);
     private final List<AudioTrack> queue;
     private final AudioPlayer player;
+    private boolean isPlaying = false;
 
     public AudioTrackScheduler(final AudioPlayer player) {
         // The queue may be modifed by different threads so guarantee memory safety
@@ -33,45 +37,74 @@ public final class AudioTrackScheduler extends AudioEventAdapter implements Audi
     }
 
     public boolean play(final AudioTrack track, final boolean force) {
-        final boolean playing = player.startTrack(track, !force);
+        boolean playing;
+        try {
+            playing = player.startTrack(track, force);
+        } catch (IllegalStateException e) {
+            playing = player.startTrack(track.makeClone(), force);
+        }
+        ;
 
         if (!playing) {
             queue.add(track);
+            log.info("added track to queue " + track.getInfo().title);
         }
 
+        isPlaying = true;
         return playing;
     }
 
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
     public boolean skip() {
-        return !queue.isEmpty() && play(queue.remove(0), true);
+        return !queue.isEmpty() && play(queue.get(0), true);
+    }
+
+    public void stop() {
+        player.setPaused(true);
+    }
+
+    public void resume() {
+        player.setPaused(false);
+    }
+
+    public void clear() {
+        queue.clear();
     }
 
     @Override
     public void onTrackEnd(final AudioPlayer player, final AudioTrack track, final AudioTrackEndReason endReason) {
         // Advance the player if the track completed naturally (FINISHED) or if the track cannot play (LOAD_FAILED)
-        if (endReason.mayStartNext) {
-            skip();
-        }
+        skip();
+        isPlaying = false;
     }
 
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
-        player.playTrack(track);
+        isPlaying = true;
+        play(track);
     }
 
     @Override
     public void playlistLoaded(final AudioPlaylist playlist) {
         // LavaPlayer found multiple AudioTracks from some playlist
+        for (AudioTrack track : playlist.getTracks()) {
+            play(track);
+        }
     }
 
     @Override
     public void noMatches() {
         // LavaPlayer did not find any audio to extract
+        log.info("No extractable track found.");
     }
 
     @Override
     public void loadFailed(final FriendlyException exception) {
         // LavaPlayer could not parse an audio source for some reason
+        log.error(exception.getMessage(), exception);
     }
 }

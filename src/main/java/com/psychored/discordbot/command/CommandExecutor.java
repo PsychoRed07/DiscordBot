@@ -70,10 +70,15 @@ public class CommandExecutor {
 
         addCommand("hello", TodoCommand.class);
         addCommand("help", HelpCommand.class);
-        addCommand("deleteLast", DeleteMessagesCommand.class);
-        addCommand("join", JoinCommand.class);
+        //addCommand("deleteLast", DeleteMessagesCommand.class);
+        //addCommand("join", JoinCommand.class);
         addCommand("search", SearchAudioCommand.class);
         addCommand("play", PlayAudioCommand.class);
+        addCommand("stop", StopAudioCommand.class);
+        addCommand("skip", SkipAudioCommand.class);
+        addCommand("resume", ResumeAudioCommand.class);
+        addCommand("queue", QueueAudioCommand.class);
+        addCommand("clear", ClearAudioCommand.class);
 
         commandsNameDesc.add(levelCommandsCursor);
     }
