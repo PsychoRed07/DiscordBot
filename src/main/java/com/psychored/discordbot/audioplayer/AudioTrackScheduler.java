@@ -28,41 +28,52 @@ public final class AudioTrackScheduler extends AudioEventAdapter implements Audi
         this.player = player;
     }
 
+    public AudioPlayer getPlayer() {
+        return player;
+    }
+
     public List<AudioTrack> getQueue() {
         return queue;
     }
 
-    public boolean play(final AudioTrack track) {
-        return play(track, false);
-    }
-
-    public boolean play(final AudioTrack track, final boolean force) {
-        boolean playing;
+    public void play(final AudioTrack track) {
         try {
-            playing = player.startTrack(track, force);
+            player.playTrack(track);
         } catch (IllegalStateException e) {
-            playing = player.startTrack(track.makeClone(), force);
+            player.playTrack(track.makeClone());
         }
-        ;
-
-        if (!playing) {
-            queue.add(track);
-            log.info("added track to queue " + track.getInfo().title);
-        }
-
-        isPlaying = true;
-        return playing;
     }
 
     public boolean isPlaying() {
         return isPlaying;
     }
 
-    public boolean skip() {
-        return !queue.isEmpty() && play(queue.get(0), true);
+    public void setPlaying(boolean playing) {
+            isPlaying = playing;
     }
 
-    public void stop() {
+    //returns true if another track is played after.
+    public boolean skip() {
+        if (!queue.isEmpty()) {
+            log.info("Playing next song in queue " + queue.get(0).getInfo().title);
+            play(queue.get(0));
+            return true;
+        } else {
+            if (isPlaying) {
+                stop();
+                log.info("Stopped current playing track");
+            }else{
+                log.info("bro idk even know how i got here.");
+            }
+            return false;
+        }
+    }
+
+    public void stop(){
+        player.stopTrack();
+    }
+
+    public void pause() {
         player.setPaused(true);
     }
 
@@ -72,20 +83,29 @@ public final class AudioTrackScheduler extends AudioEventAdapter implements Audi
 
     public void clear() {
         queue.clear();
+        log.info("Track queue has been cleared.");
     }
 
     @Override
     public void onTrackEnd(final AudioPlayer player, final AudioTrack track, final AudioTrackEndReason endReason) {
         // Advance the player if the track completed naturally (FINISHED) or if the track cannot play (LOAD_FAILED)
-        skip();
         isPlaying = false;
+        if(!queue.isEmpty() && track.getInfo().title.equals(queue.get(0).getInfo().title)){
+            queue.remove(0);
+        }
+        skip();
     }
 
     @Override
     public void trackLoaded(final AudioTrack track) {
         // LavaPlayer found an audio source for us to play
-        isPlaying = true;
-        play(track);
+        if (isPlaying) {
+            queue.add(track);
+            log.info("added track to queue " + track.getInfo().title + "Currently " + queue.size() + " tracks in queue.");
+        } else {
+            isPlaying = true;
+            play(track);
+        }
     }
 
     @Override
@@ -106,5 +126,26 @@ public final class AudioTrackScheduler extends AudioEventAdapter implements Audi
     public void loadFailed(final FriendlyException exception) {
         // LavaPlayer could not parse an audio source for some reason
         log.error(exception.getMessage(), exception);
+    }
+
+    @Override
+    public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
+        super.onTrackException(player, track, exception);
+        log.info("AudioPlayer is stuck.");
+        player.stopTrack();
+    }
+
+    @Override
+    public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
+        super.onTrackStuck(player, track, thresholdMs);
+        log.info("AudioPlayer is stuck.");
+        player.stopTrack();
+    }
+
+    @Override
+    public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs, StackTraceElement[] stackTrace) {
+        super.onTrackStuck(player, track, thresholdMs, stackTrace);
+        log.info("AudioPlayer is stuck.");
+        player.stopTrack();
     }
 }

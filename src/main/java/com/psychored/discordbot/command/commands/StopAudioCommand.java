@@ -21,7 +21,7 @@ public class StopAudioCommand extends Command {
         final GuildAudioManager manager = GuildAudioManager.of(channel.getId());
         final AudioTrackScheduler scheduler = manager.getScheduler();
 
-        scheduler.stop();
+        scheduler.pause();
 
         return CommandHelper.say(event, CommandHelper.basicEmbed("Music stopped. use !resume to continue where you left off."));
     }

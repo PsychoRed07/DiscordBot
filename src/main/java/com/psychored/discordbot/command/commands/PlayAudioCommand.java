@@ -50,9 +50,9 @@ public class PlayAudioCommand extends Command {
             return Mono.just(event).then();
         }
 
-        final GuildAudioManager manager = GuildAudioManager.of(channel.getId());
-        final AudioProvider provider = manager.getProvider();
-        final AudioTrackScheduler scheduler = manager.getScheduler();
+        GuildAudioManager manager = GuildAudioManager.of(channel.getId());
+        AudioProvider provider = manager.getProvider();
+        AudioTrackScheduler scheduler = manager.getScheduler();
 
         List<YoutubeItem> list = YoutubeSearchManager.getSearchResult(channel.getId().toString());
 
@@ -69,7 +69,7 @@ public class PlayAudioCommand extends Command {
             return CommandHelper.say(event, "Added to queue : " + list.get(arg - 1).getTitle());
         }
 
-        final Mono<Void> onDisconnect = channel.join(spec -> spec.setProvider(provider))
+        Mono<Void> onDisconnect = channel.join(spec -> spec.setProvider(provider))
                 .flatMap(connection -> {
                     // The bot itself has a VoiceState; 1 VoiceState signals bot is alone
                     final Publisher<Boolean> voiceStateCounter = channel.getVoiceStates()
@@ -94,7 +94,7 @@ public class PlayAudioCommand extends Command {
                     // Disconnect the bot if either onDelay or onEvent are completed!
                     return Mono.firstWithSignal(onDelay, onEvent).then(connection.disconnect());
                 });
-
+        scheduler.setPlaying(false);
         return onDisconnect;
     }
 }

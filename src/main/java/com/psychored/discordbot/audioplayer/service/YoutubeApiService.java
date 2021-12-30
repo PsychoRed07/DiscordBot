@@ -11,6 +11,7 @@ import com.google.api.services.youtube.model.SearchListResponse;
 import com.google.api.services.youtube.model.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -33,6 +34,16 @@ public class YoutubeApiService {
     public static JsonFactory jsonFactory = new JacksonFactory();
     public static YouTube youTube;
 
+    @Value("${jya.youtube.token}")
+    private String YOUTUBE_API_TOKEN;
+
+    private static String STATIC_YOUTUBE_API_TOKEN;
+
+    @Value("${jya.youtube.token}")
+    public void setNameStatic(String name){
+        YoutubeApiService.STATIC_YOUTUBE_API_TOKEN = YOUTUBE_API_TOKEN;
+    }
+
     static {
         propertiesBundle = ResourceBundle.getBundle(PROPERTIES_FILENAME);
         youTube = new YouTube.Builder(HTTP_TRANSPORT, jsonFactory, httpRequest -> {
@@ -49,7 +60,8 @@ public class YoutubeApiService {
 
             if (youTube != null) {
                 YouTube.Search.List search = youTube.search().list("id,snippet");
-                String apiKey = propertiesBundle.getString("jya.youtube.token");
+                log.info("Youtube token " + STATIC_YOUTUBE_API_TOKEN);
+                String apiKey = STATIC_YOUTUBE_API_TOKEN;
 
                 search.setKey(apiKey);
                 search.setQ(searchQuery);

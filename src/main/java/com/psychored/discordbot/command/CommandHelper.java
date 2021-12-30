@@ -11,6 +11,8 @@ import reactor.core.publisher.Mono;
 
 public class CommandHelper {
 
+    private static final String FOOTER = "Feel free to donate using the !donate command ! \uD83D\uDE0D";
+
     public static Mono<Void> say(Message event, String text) {
         return Mono.just(event)
                 .filter(message -> event.getAuthor().map(user -> !user.isBot()).orElse(false))
@@ -46,7 +48,7 @@ public class CommandHelper {
         embedCreateSpec.description(text);
         //embedCreateSpec.author(BotConfiguration.getClient().getSelf().block().getUsername(), null ,null);
         //embedCreateSpec.image(BotConfiguration.getClient().getSelf().block().getAvatarUrl());
-        embedCreateSpec.footer("feel free to donate using the !donate command \uD83D\uDE0D", BotConfiguration.getClient().getSelf().block().getAvatarUrl());
+        embedCreateSpec.footer(FOOTER, BotConfiguration.getClient().getSelf().block().getAvatarUrl());
 
         return embedCreateSpec.build();
     }
@@ -58,7 +60,7 @@ public class CommandHelper {
         embedCreateSpec.description(text);
         //embedCreateSpec.author(BotConfiguration.getClient().getSelf().block().getUsername(), null ,null);
         //embedCreateSpec.image(BotConfiguration.getClient().getSelf().block().getAvatarUrl());
-        embedCreateSpec.footer("feel free to donate using the !donate command \uD83D\uDE0D", BotConfiguration.getClient().getSelf().block().getAvatarUrl());
+        embedCreateSpec.footer(FOOTER, BotConfiguration.getClient().getSelf().block().getAvatarUrl());
 
         return embedCreateSpec.build();
     }
