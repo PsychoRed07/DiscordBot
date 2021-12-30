@@ -13,7 +13,7 @@ import java.util.List;
 
 public class QueueAudioCommand extends Command {
     {
-        setShortDescription("Honestly i'm just trying to survive");
+        setShortDescription("Shows tracks in queue.");
         setLongDescription("");
     }
 
@@ -24,6 +24,11 @@ public class QueueAudioCommand extends Command {
         final AudioTrackScheduler scheduler = manager.getScheduler();
 
         List<AudioTrack> trackList = scheduler.getQueue();
+
+        if(trackList == null || trackList.isEmpty()){
+           return CommandHelper.say(event, CommandHelper.basicEmbed("No tracks in queue."));
+        }
+
         StringBuilder builder = new StringBuilder();
         builder.append("Audio in queue : \n\n");
         for (int i = 0; i < trackList.size(); i++) {

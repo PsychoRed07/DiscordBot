@@ -22,7 +22,7 @@ import static com.psychored.discordbot.audioplayer.AudioGlobalManager.PLAYER_MAN
 
 public class PlayAudioCommand extends Command {
     {
-        setShortDescription("Helping is my mission !");
+        setShortDescription("Plays an audio after using the !search");
         setLongDescription("");
     }
 

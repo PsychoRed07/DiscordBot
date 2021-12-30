@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 
 public class ResumeAudioCommand extends Command {
     {
-        setShortDescription("Honestly i'm just trying to survive");
+        setShortDescription("Resumes the audio that was stopped with !stop.");
         setLongDescription("");
     }
 

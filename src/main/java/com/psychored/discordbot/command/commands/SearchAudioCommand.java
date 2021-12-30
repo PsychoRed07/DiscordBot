@@ -15,7 +15,7 @@ import java.util.List;
 
 public class SearchAudioCommand extends Command {
     {
-        setShortDescription("Honestly i'm just trying to survive");
+        setShortDescription("Used to search music audio. To use -> !search <title>");
         setLongDescription("");
     }
 
